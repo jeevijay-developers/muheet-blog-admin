@@ -20,8 +20,8 @@ interface AdminDashboardProps {
 
 const AdminDashboard = ({ blogs, onCreateNew, onViewBlogs }: AdminDashboardProps) => {
   const totalBlogs = blogs.length;
-  const publishedBlogs = blogs.filter(blog => blog.isVisible).length;
-  const draftBlogs = blogs.filter(blog => !blog.isVisible).length;
+  const publishedBlogs = blogs.filter(blog => blog.visibility === 'public').length;
+  const draftBlogs = blogs.filter(blog => blog.visibility === 'draft').length;
   
   const recentBlogs = blogs
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -151,7 +151,7 @@ const AdminDashboard = ({ blogs, onCreateNew, onViewBlogs }: AdminDashboardProps
             ) : (
               <div className="space-y-3">
                 {recentBlogs.map((blog) => (
-                  <div key={blog.id} className="flex items-center justify-between p-3 rounded-lg border">
+                  <div key={blog._id} className="flex items-center justify-between p-3 rounded-lg border">
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{blog.title}</p>
                       <p className="text-sm text-muted-foreground">
@@ -159,7 +159,7 @@ const AdminDashboard = ({ blogs, onCreateNew, onViewBlogs }: AdminDashboardProps
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      {blog.isVisible ? (
+                      {blog.visibility === 'public' ? (
                         <Eye className="h-4 w-4 text-success" />
                       ) : (
                         <EyeOff className="h-4 w-4 text-muted-foreground" />

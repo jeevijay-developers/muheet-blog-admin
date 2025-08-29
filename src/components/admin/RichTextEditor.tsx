@@ -1,6 +1,7 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { 
   Bold, 
   Italic, 
@@ -10,7 +11,14 @@ import {
   Quote,
   Code,
   Undo,
-  Redo
+  Redo,
+  Heading1,
+  Heading2,
+  Heading3,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Link
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -32,6 +40,9 @@ const RichTextEditor = ({ content, onChange, className }: RichTextEditorProps) =
           keepMarks: true,
           keepAttributes: false,
         },
+        heading: {
+          levels: [1, 2, 3],
+        }
       }),
     ],
     content,
@@ -41,8 +52,8 @@ const RichTextEditor = ({ content, onChange, className }: RichTextEditorProps) =
     editorProps: {
       attributes: {
         class: cn(
-          'prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl mx-auto focus:outline-none',
-          'min-h-[300px] p-4 border-0'
+          'prose prose-sm sm:prose-base dark:prose-invert focus:outline-none',
+          'min-h-[300px] p-6 border-0 overflow-y-auto'
         ),
       },
     },
@@ -79,72 +90,120 @@ const RichTextEditor = ({ content, onChange, className }: RichTextEditorProps) =
   );
 
   return (
-    <div className={cn("border border-input rounded-lg bg-card", className)}>
+    <div className={cn("border border-input rounded-lg bg-card shadow-sm overflow-hidden", className)}>
       {/* Toolbar */}
-      <div className="border-b border-border p-2 flex flex-wrap gap-1">
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          isActive={editor.isActive('bold')}
-        >
-          <Bold className="h-4 w-4" />
-        </ToolbarButton>
+      <div className="border-b border-border p-2 bg-muted/40 flex flex-wrap items-center gap-1">
+        <div className="flex items-center space-x-1 mr-1">
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+            isActive={editor.isActive('heading', { level: 1 })}
+          >
+            <Heading1 className="h-4 w-4" />
+          </ToolbarButton>
+          
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+            isActive={editor.isActive('heading', { level: 2 })}
+          >
+            <Heading2 className="h-4 w-4" />
+          </ToolbarButton>
+          
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+            isActive={editor.isActive('heading', { level: 3 })}
+          >
+            <Heading3 className="h-4 w-4" />
+          </ToolbarButton>
+        </div>
         
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          isActive={editor.isActive('italic')}
-        >
-          <Italic className="h-4 w-4" />
-        </ToolbarButton>
+        <div className="w-px bg-border mx-2 h-6" />
         
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleCode().run()}
-          isActive={editor.isActive('code')}
-        >
-          <Code className="h-4 w-4" />
-        </ToolbarButton>
+        <div className="flex items-center space-x-1 mr-1">
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            isActive={editor.isActive('bold')}
+          >
+            <Bold className="h-4 w-4" />
+          </ToolbarButton>
+          
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            isActive={editor.isActive('italic')}
+          >
+            <Italic className="h-4 w-4" />
+          </ToolbarButton>
+          
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleCode().run()}
+            isActive={editor.isActive('code')}
+          >
+            <Code className="h-4 w-4" />
+          </ToolbarButton>
+        </div>
         
-        <div className="w-px bg-border mx-2" />
+        <div className="w-px bg-border mx-2 h-6" />
         
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          isActive={editor.isActive('bulletList')}
-        >
-          <List className="h-4 w-4" />
-        </ToolbarButton>
+        <div className="flex items-center space-x-1 mr-1">
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            isActive={editor.isActive('bulletList')}
+          >
+            <List className="h-4 w-4" />
+          </ToolbarButton>
+          
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            isActive={editor.isActive('orderedList')}
+          >
+            <ListOrdered className="h-4 w-4" />
+          </ToolbarButton>
+          
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleBlockquote().run()}
+            isActive={editor.isActive('blockquote')}
+          >
+            <Quote className="h-4 w-4" />
+          </ToolbarButton>
+        </div>
         
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          isActive={editor.isActive('orderedList')}
-        >
-          <ListOrdered className="h-4 w-4" />
-        </ToolbarButton>
+        <div className="w-px bg-border mx-2 h-6" />
         
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          isActive={editor.isActive('blockquote')}
-        >
-          <Quote className="h-4 w-4" />
-        </ToolbarButton>
-        
-        <div className="w-px bg-border mx-2" />
-        
-        <ToolbarButton
-          onClick={() => editor.chain().focus().undo().run()}
-          disabled={!editor.can().chain().focus().undo().run()}
-        >
-          <Undo className="h-4 w-4" />
-        </ToolbarButton>
-        
-        <ToolbarButton
-          onClick={() => editor.chain().focus().redo().run()}
-          disabled={!editor.can().chain().focus().redo().run()}
-        >
-          <Redo className="h-4 w-4" />
-        </ToolbarButton>
+        <div className="flex items-center space-x-1">
+          <ToolbarButton
+            onClick={() => editor.chain().focus().undo().run()}
+            disabled={!editor.can().chain().focus().undo().run()}
+          >
+            <Undo className="h-4 w-4" />
+          </ToolbarButton>
+          
+          <ToolbarButton
+            onClick={() => editor.chain().focus().redo().run()}
+            disabled={!editor.can().chain().focus().redo().run()}
+          >
+            <Redo className="h-4 w-4" />
+          </ToolbarButton>
+        </div>
+
+        <div className="ml-auto text-xs text-muted-foreground opacity-70 hidden sm:block">
+          Write your content here...
+        </div>
       </div>
       
       {/* Editor */}
-      <EditorContent editor={editor} className="min-h-[300px]" />
+      <div className="bg-background/50 min-h-[300px] max-h-[600px] overflow-y-auto">
+        <EditorContent editor={editor} className="min-h-[300px]" />
+      </div>
+      
+      <div className="border-t border-border p-2 bg-muted/40 flex justify-between items-center text-xs text-muted-foreground">
+        <div>
+          Markdown formatting supported
+        </div>
+        <div className="flex items-center">
+          <span>
+            Rich text editor
+          </span>
+        </div>
+      </div>
     </div>
   );
 };

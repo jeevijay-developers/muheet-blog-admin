@@ -1,18 +1,32 @@
 export interface Blog {
-  id: string;
+  _id: string;
   title: string;
-  content: string;
-  excerpt: string;
+  banner: string;
+  images?: string[];
+  subtitle?: string;
+  body: string;
+  date: string;
+  tags: string[];
+  visibility: 'public' | 'private' | 'draft';
+  slug: string;
   author: string;
-  isVisible: boolean;
+  readTime?: number;
   createdAt: string;
   updatedAt: string;
-  slug: string;
 }
 
 export interface BlogFormData {
+  _id?: string;
   title: string;
-  content: string;
-  excerpt: string;
-  isVisible: boolean;
+  banner: string;
+  images?: string[];
+  subtitle?: string;
+  body: string;
+  tags: string[];
+  visibility: 'public' | 'private' | 'draft';
+  createdAt?: string;
+  updatedAt?: string;
+  slug?: string;
+  author?: string;
+  readTime?: number;
 }

@@ -5,8 +5,15 @@ import AdminDashboard from '@/components/admin/AdminDashboard';
 import BlogList from '@/components/admin/BlogList';
 import BlogForm from '@/components/admin/BlogForm';
 import { Blog, BlogFormData } from '@/types/blog';
-import { blogStorage } from '@/utils/blogStorage';
 import { useToast } from '@/hooks/use-toast';
+import { 
+  getAllBlogs, 
+  createBlog, 
+  updateBlog, 
+  deleteBlog,
+  publishBlog,
+  unpublishBlog
+} from '@/server/server';
 
 type AdminTab = 'dashboard' | 'blogs' | 'create' | 'edit' | 'settings';
 
@@ -27,14 +34,30 @@ const Admin = () => {
 
   // Load blogs on mount and when authenticated
   useEffect(() => {
-    if (isAuthenticated) {
-      setBlogs(blogStorage.getAll());
-    }
-  }, [isAuthenticated]);
+    const fetchBlogs = async () => {
+      if (isAuthenticated) {
+        try {
+          const response = await getAllBlogs();
+          if (response.success && Array.isArray(response.data)) {
+            setBlogs(response.data);
+          }
+        } catch (error) {
+          console.error('Error fetching blogs:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load blogs. Please try again.",
+            variant: "destructive"
+          });
+        }
+      }
+    };
+    
+    fetchBlogs();
+  }, [isAuthenticated, toast]);
 
   const handleLogin = () => {
+    localStorage.setItem('admin_authenticated', 'true');
     setIsAuthenticated(true);
-    setBlogs(blogStorage.getAll());
   };
 
   const handleLogout = () => {
@@ -44,42 +67,111 @@ const Admin = () => {
     setEditingBlog(null);
   };
 
-  const handleCreateBlog = (data: BlogFormData) => {
-    const newBlog = blogStorage.create(data);
-    setBlogs(blogStorage.getAll());
-    setActiveTab('blogs');
-    toast({
-      title: "Blog Created",
-      description: "Your new blog post has been created successfully.",
-    });
-  };
-
-  const handleUpdateBlog = (data: BlogFormData) => {
-    if (!editingBlog) return;
-    
-    const updatedBlog = blogStorage.update(editingBlog.id, data);
-    if (updatedBlog) {
-      setBlogs(blogStorage.getAll());
-      setEditingBlog(null);
-      setActiveTab('blogs');
+  const handleCreateBlog = async (data: BlogFormData) => {
+    try {
+      const response = await createBlog(data);
+      if (response.success) {
+        // Refresh blogs list
+        const blogsResponse = await getAllBlogs();
+        if (blogsResponse.success) {
+          setBlogs(blogsResponse.data);
+        }
+        setActiveTab('blogs');
+        
+        toast({
+          title: "Blog Created",
+          description: "Your new blog post has been created successfully.",
+        });
+        return response.data;
+      }
+    } catch (error) {
+      console.error('Error creating blog:', error);
       toast({
-        title: "Blog Updated",
-        description: "Your blog post has been updated successfully.",
+        title: "Error",
+        description: "Failed to create blog post. Please try again.",
+        variant: "destructive"
       });
     }
   };
 
-  const handleDeleteBlog = (id: string) => {
-    const success = blogStorage.delete(id);
-    if (success) {
-      setBlogs(blogStorage.getAll());
+  const handleUpdateBlog = async (data: BlogFormData) => {
+    if (!editingBlog) return;
+    
+    try {
+      const response = await updateBlog(editingBlog._id, data);
+      if (response.success) {
+        // Refresh blogs list
+        const blogsResponse = await getAllBlogs();
+        if (blogsResponse.success) {
+          setBlogs(blogsResponse.data);
+        }
+        setEditingBlog(null);
+        setActiveTab('blogs');
+        toast({
+          title: "Blog Updated",
+          description: "Your blog post has been updated successfully.",
+        });
+      }
+    } catch (error) {
+      console.error('Error updating blog:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update blog post. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
-  const handleToggleBlogVisibility = (id: string, isVisible: boolean) => {
-    const updatedBlog = blogStorage.update(id, { isVisible });
-    if (updatedBlog) {
-      setBlogs(blogStorage.getAll());
+  const handleDeleteBlog = async (id: string) => {
+    try {
+      const response = await deleteBlog(id);
+      if (response.success) {
+        // Refresh blogs list
+        const blogsResponse = await getAllBlogs();
+        if (blogsResponse.success) {
+          setBlogs(blogsResponse.data);
+        }
+        
+        toast({
+          title: "Blog Deleted",
+          description: "Your blog post has been successfully deleted.",
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting blog:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete blog post. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleToggleBlogVisibility = async (id: string, isPublic: boolean) => {
+    try {
+      const response = isPublic 
+        ? await unpublishBlog(id)
+        : await publishBlog(id);
+        
+      if (response.success) {
+        // Refresh blogs list
+        const blogsResponse = await getAllBlogs();
+        if (blogsResponse.success) {
+          setBlogs(blogsResponse.data);
+        }
+        
+        toast({
+          title: isPublic ? "Blog Unpublished" : "Blog Published",
+          description: `Your blog post is now ${isPublic ? "unpublished" : "published"}.`,
+        });
+      }
+    } catch (error) {
+      console.error('Error toggling visibility:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update blog visibility. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -139,9 +231,12 @@ const Admin = () => {
           <BlogForm
             initialData={{
               title: editingBlog.title,
-              content: editingBlog.content,
-              excerpt: editingBlog.excerpt,
-              isVisible: editingBlog.isVisible
+              banner: editingBlog.banner,
+              images: editingBlog.images || [],
+              subtitle: editingBlog.subtitle || '',
+              body: editingBlog.body,
+              tags: editingBlog.tags || [],
+              visibility: editingBlog.visibility
             }}
             onSubmit={handleUpdateBlog}
             onCancel={handleCancelEdit}

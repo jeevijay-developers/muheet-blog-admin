@@ -51,11 +51,11 @@ const BlogList = ({ blogs, onEdit, onDelete, onToggleVisibility, onCreateNew }: 
 
   const filteredBlogs = blogs.filter(blog => {
     const matchesSearch = blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         blog.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
+                         (blog.subtitle || '').toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesFilter = filter === 'all' || 
-                         (filter === 'visible' && blog.isVisible) ||
-                         (filter === 'hidden' && !blog.isVisible);
+                         (filter === 'visible' && blog.visibility === 'public') ||
+                         (filter === 'hidden' && blog.visibility !== 'public');
 
     return matchesSearch && matchesFilter;
   });
@@ -122,7 +122,7 @@ const BlogList = ({ blogs, onEdit, onDelete, onToggleVisibility, onCreateNew }: 
               <div>
                 <p className="text-sm text-muted-foreground">Published</p>
                 <p className="text-2xl font-semibold text-success">
-                  {blogs.filter(blog => blog.isVisible).length}
+                  {blogs.filter(blog => blog.visibility === 'public').length}
                 </p>
               </div>
               <div className="w-8 h-8 bg-success/10 rounded-lg flex items-center justify-center">
@@ -138,7 +138,7 @@ const BlogList = ({ blogs, onEdit, onDelete, onToggleVisibility, onCreateNew }: 
               <div>
                 <p className="text-sm text-muted-foreground">Drafts</p>
                 <p className="text-2xl font-semibold text-muted-foreground">
-                  {blogs.filter(blog => !blog.isVisible).length}
+                  {blogs.filter(blog => blog.visibility !== 'public').length}
                 </p>
               </div>
               <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
@@ -202,24 +202,45 @@ const BlogList = ({ blogs, onEdit, onDelete, onToggleVisibility, onCreateNew }: 
               </TableHeader>
               <TableBody>
                 {filteredBlogs.map((blog) => (
-                  <TableRow key={blog.id}>
+                  <TableRow key={blog._id}>
                     <TableCell>
-                      <div>
-                        <p className="font-medium">{blog.title}</p>
-                        {blog.excerpt && (
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {blog.excerpt}
-                          </p>
+                      <div className="flex items-start gap-2">
+                        {blog.banner && (
+                          <img 
+                            src={blog.banner} 
+                            alt={blog.title}
+                            className="h-10 w-16 object-cover rounded" 
+                          />
                         )}
+                        <div>
+                          <p className="font-medium">{blog.title}</p>
+                          {blog.subtitle && (
+                            <p className="text-sm text-muted-foreground line-clamp-2">
+                              {blog.subtitle}
+                            </p>
+                          )}
+                          {blog.tags && blog.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {blog.tags.map(tag => (
+                                <span 
+                                  key={tag} 
+                                  className="bg-muted text-muted-foreground px-1.5 py-0.5 rounded text-xs"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Badge 
-                          variant={blog.isVisible ? "default" : "secondary"}
-                          className={blog.isVisible ? "bg-success hover:bg-success/90" : ""}
+                          variant={blog.visibility === 'public' ? "default" : "secondary"}
+                          className={blog.visibility === 'public' ? "bg-success hover:bg-success/90" : ""}
                         >
-                          {blog.isVisible ? (
+                          {blog.visibility === 'public' ? (
                             <>
                               <Eye className="h-3 w-3 mr-1" />
                               Published
@@ -247,9 +268,9 @@ const BlogList = ({ blogs, onEdit, onDelete, onToggleVisibility, onCreateNew }: 
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Switch
-                          checked={blog.isVisible}
+                          checked={blog.visibility === 'public'}
                           onCheckedChange={() => 
-                            handleToggleVisibility(blog.id, blog.isVisible, blog.title)
+                            handleToggleVisibility(blog._id, blog.visibility === 'public', blog.title)
                           }
                         />
                         <Button
@@ -275,7 +296,7 @@ const BlogList = ({ blogs, onEdit, onDelete, onToggleVisibility, onCreateNew }: 
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
                               <AlertDialogAction
-                                onClick={() => handleDelete(blog.id, blog.title)}
+                                onClick={() => handleDelete(blog._id, blog.title)}
                                 className="bg-destructive hover:bg-destructive/90"
                               >
                                 Delete

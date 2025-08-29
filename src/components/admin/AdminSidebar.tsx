@@ -24,7 +24,7 @@ const AdminSidebar = ({ activeTab, onTabChange, onLogout }: AdminSidebarProps) =
   ];
 
   return (
-    <div className="w-64 bg-admin-sidebar border-r border-admin-border min-h-screen">
+    <div className="w-64 bg-admin-sidebar border-r border-admin-border min-h-screen flex flex-col">
       {/* Header */}
       <div className="p-6 border-b border-admin-border">
         <div className="flex items-center space-x-3">
@@ -39,7 +39,8 @@ const AdminSidebar = ({ activeTab, onTabChange, onLogout }: AdminSidebarProps) =
       </div>
 
       {/* Navigation */}
-      <nav className="p-4 space-y-2">
+      <nav className="p-4 space-y-2 flex-1">
+        <div >
         {menuItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -47,10 +48,10 @@ const AdminSidebar = ({ activeTab, onTabChange, onLogout }: AdminSidebarProps) =
               key={item.id}
               variant={activeTab === item.id ? "default" : "ghost"}
               className={cn(
-                "w-full justify-start space-x-3 h-11",
+                "w-full justify-start space-x-3 h-11 mb-2",
                 activeTab === item.id 
                   ? "bg-primary text-primary-foreground shadow-soft" 
-                  : "hover:bg-secondary"
+                  : "hover:bg-gray-700"
               )}
               onClick={() => onTabChange(item.id)}
             >
@@ -59,10 +60,9 @@ const AdminSidebar = ({ activeTab, onTabChange, onLogout }: AdminSidebarProps) =
             </Button>
           );
         })}
+        </div>
       </nav>
-
-      {/* Logout */}
-      <div className="absolute bottom-4 left-4 right-4">
+      <div className="p-4">
         <Button 
           variant="outline" 
           className="w-full justify-start space-x-3"
@@ -73,6 +73,7 @@ const AdminSidebar = ({ activeTab, onTabChange, onLogout }: AdminSidebarProps) =
         </Button>
       </div>
     </div>
+
   );
 };
 
