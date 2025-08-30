@@ -207,7 +207,7 @@ const BlogList = ({ blogs, onEdit, onDelete, onToggleVisibility, onCreateNew }: 
                       <div className="flex items-start gap-2">
                         {blog.banner && (
                           <img 
-                            src={blog.banner} 
+                            src={blog.banner.url} 
                             alt={blog.title}
                             className="h-10 w-16 object-cover rounded" 
                           />

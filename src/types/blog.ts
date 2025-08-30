@@ -1,8 +1,14 @@
 export interface Blog {
   _id: string;
   title: string;
-  banner: string;
-  images?: string[];
+  banner: {
+    public_id: string;
+    url: string;
+  };
+  images?: {
+    public_id: string;
+    url: string;
+  }[];
   subtitle?: string;
   body: string;
   date: string;
@@ -18,8 +24,14 @@ export interface Blog {
 export interface BlogFormData {
   _id?: string;
   title: string;
-  banner: string;
-  images?: string[];
+  banner: {
+    public_id: string;
+    url: string;
+  };
+  images?: {
+    public_id: string;
+    url: string;
+  }[];
   subtitle?: string;
   body: string;
   tags: string[];

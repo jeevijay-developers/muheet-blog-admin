@@ -9,6 +9,7 @@ import { Save, ArrowLeft } from 'lucide-react';
 import RichTextEditor from './RichTextEditor';
 import { BlogFormData } from '@/types/blog';
 import { useToast } from '@/hooks/use-toast';
+import { uploadImage, uploadMultipleImages } from '@/server/server.js';
 
 interface BlogFormProps {
   initialData?: BlogFormData;
@@ -21,7 +22,7 @@ const BlogForm = ({ initialData, onSubmit, onCancel, isEditing = false }: BlogFo
   const { toast } = useToast();
   const [formData, setFormData] = useState<BlogFormData>({
     title: '',
-    banner: '',
+    banner: { public_id: '', url: '' },
     images: [],
     subtitle: '',
     body: '',
@@ -32,45 +33,82 @@ const BlogForm = ({ initialData, onSubmit, onCancel, isEditing = false }: BlogFo
   const [loading, setLoading] = useState(false);
   const [tagInput, setTagInput] = useState('');
 
-  const handleFileUpload = async (file: File): Promise<string> => {
-    // For now, create a blob URL for local preview
-    // In production, you would upload to a cloud service like Cloudinary, AWS S3, etc.
-    return URL.createObjectURL(file);
+  const handleFileUpload = async (file: File): Promise<{ public_id: string; url: string }> => {
+    try {
+      const result = await uploadImage(file);
+      
+      if (result.success) {
+        return result.image; // Backend returns { image: { public_id, url } }
+      } else {
+        throw new Error(result.message || 'Upload failed');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      throw new Error('Failed to upload image');
+    }
   };
 
   const handleBannerChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       try {
-        const imageUrl = await handleFileUpload(file);
-        setFormData({ ...formData, banner: imageUrl });
+        setLoading(true);
+        const imageData = await handleFileUpload(file);
+        setFormData({ ...formData, banner: imageData });
+        toast({
+          title: "Success",
+          description: "Banner image uploaded successfully.",
+        });
       } catch (error) {
         toast({
           title: "Error",
           description: "Failed to upload image. Please try again.",
           variant: "destructive"
         });
+      } finally {
+        setLoading(false);
       }
     }
   };
 
   const handleAdditionalImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
+    const files = e.target.files;
+    if (files && files.length > 0) {
       try {
-        const imageUrl = await handleFileUpload(file);
-        setFormData({
-          ...formData,
-          images: [...(formData.images || []), imageUrl]
-        });
+        setLoading(true);
+        
+        // Convert FileList to array
+        const filesArray = Array.from(files);
+        
+        // Upload multiple images at once
+        const result = await uploadMultipleImages(filesArray);
+        console.log("Upload result:", result);
+
+        if (result.success) {
+          setFormData({
+            ...formData,
+            images: [...(formData.images || []), ...result.data.uploaded]
+          });
+          
+          toast({
+            title: "Success",
+            description: `${result.data.uploaded.length} image(s) uploaded successfully.`,
+          });
+        } else {
+          throw new Error(result.message || 'Upload failed');
+        }
+        
         // Reset the input
         e.target.value = '';
       } catch (error) {
+        console.error('Upload error:', error);
         toast({
           title: "Error",
-          description: "Failed to upload image. Please try again.",
+          description: "Failed to upload images. Please try again.",
           variant: "destructive"
         });
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -94,8 +132,9 @@ const BlogForm = ({ initialData, onSubmit, onCancel, isEditing = false }: BlogFo
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.title.trim() || !formData.body.trim() || !formData.banner) {
+    console.log("Data: ",formData);
+
+    if (!formData.title.trim() || !formData.body.trim() || !formData.banner.url) {
       toast({
         title: "Validation Error",
         description: "Title, banner image, and content are required fields.",
@@ -198,10 +237,10 @@ const BlogForm = ({ initialData, onSubmit, onCancel, isEditing = false }: BlogFo
                     </span>
                   </Label>
                   <div className="space-y-3">
-                    {formData.banner ? (
+                    {formData.banner.url ? (
                       <div className="relative group rounded-lg overflow-hidden border shadow-sm transition-all hover:shadow-md">
                         <img 
-                          src={formData.banner} 
+                          src={formData.banner.url} 
                           alt="Banner preview" 
                           className="w-full h-56 object-cover transition-transform group-hover:scale-105 duration-300"
                         />
@@ -210,7 +249,7 @@ const BlogForm = ({ initialData, onSubmit, onCancel, isEditing = false }: BlogFo
                             type="button"
                             variant="destructive"
                             size="sm"
-                            onClick={() => setFormData({ ...formData, banner: '' })}
+                            onClick={() => setFormData({ ...formData, banner: { public_id: '', url: '' } })}
                             className="shadow-md"
                           >
                             Remove Banner
@@ -284,7 +323,7 @@ const BlogForm = ({ initialData, onSubmit, onCancel, isEditing = false }: BlogFo
                           className="relative group overflow-hidden rounded-md border shadow-sm hover:shadow-md transition-all"
                         >
                           <img 
-                            src={img} 
+                            src={img.url} 
                             alt={`Additional image ${index + 1}`} 
                             className="w-full h-28 object-cover transition-transform group-hover:scale-105 duration-300"
                           />
@@ -317,6 +356,7 @@ const BlogForm = ({ initialData, onSubmit, onCancel, isEditing = false }: BlogFo
                     <Input
                       type="file"
                       accept="image/*"
+                      multiple
                       onChange={handleAdditionalImageUpload}
                       className="file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-secondary file:text-secondary-foreground hover:file:bg-secondary/90 cursor-pointer border border-input flex-1"
                     />
@@ -426,8 +466,8 @@ const BlogForm = ({ initialData, onSubmit, onCancel, isEditing = false }: BlogFo
                       <span>Title added</span>
                     </li>
                     <li className="flex items-center gap-2">
-                      <div className={`w-4 h-4 rounded-full flex items-center justify-center ${formData.banner ? 'bg-success text-success-foreground' : 'bg-muted-foreground/30'}`}>
-                        {formData.banner && '✓'}
+                      <div className={`w-4 h-4 rounded-full flex items-center justify-center ${formData.banner.url ? 'bg-success text-success-foreground' : 'bg-muted-foreground/30'}`}>
+                        {formData.banner.url && '✓'}
                       </div>
                       <span>Banner image added</span>
                     </li>

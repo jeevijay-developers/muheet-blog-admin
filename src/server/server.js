@@ -82,3 +82,47 @@ export const unpublishBlog = async (id) => {
 export const getRecentBlogs = async (limit = 5) => {
   return getAllBlogs({ limit, visibility: 'public', page: 1 });
 };
+
+// Image upload functions
+export const uploadImage = async (file) => {
+  try {
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    const response = await axiosInstance.post('/api/blogs/upload-image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const uploadMultipleImages = async (files) => {
+  try {
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('images', file);
+    });
+    
+    const response = await axiosInstance.post('/api/blogs/upload/multiple', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const deleteImage = async (publicId) => {
+  try {
+    const response = await axiosInstance.delete(`/api/blogs/image/${publicId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
