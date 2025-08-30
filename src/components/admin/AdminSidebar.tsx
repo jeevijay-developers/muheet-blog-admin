@@ -4,7 +4,6 @@ import {
   LayoutDashboard, 
   FileText, 
   PlusCircle, 
-  Settings, 
   LogOut,
   User
 } from 'lucide-react';
@@ -20,7 +19,6 @@ const AdminSidebar = ({ activeTab, onTabChange, onLogout }: AdminSidebarProps) =
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'blogs', label: 'All Blogs', icon: FileText },
     { id: 'create', label: 'Create Blog', icon: PlusCircle },
-    { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
   return (

@@ -35,14 +35,43 @@ const RichTextEditor = ({ content, onChange, className }: RichTextEditorProps) =
         bulletList: {
           keepMarks: true,
           keepAttributes: false,
+          HTMLAttributes: {
+            class: 'prose-ul',
+          },
         },
         orderedList: {
           keepMarks: true,
           keepAttributes: false,
+          HTMLAttributes: {
+            class: 'prose-ol',
+          },
+        },
+        listItem: {
+          HTMLAttributes: {
+            class: 'prose-li',
+          },
         },
         heading: {
           levels: [1, 2, 3],
-        }
+          HTMLAttributes: {
+            class: 'prose-heading',
+          },
+        },
+        paragraph: {
+          HTMLAttributes: {
+            class: 'prose-p',
+          },
+        },
+        blockquote: {
+          HTMLAttributes: {
+            class: 'prose-blockquote',
+          },
+        },
+        code: {
+          HTMLAttributes: {
+            class: 'prose-code',
+          },
+        },
       }),
     ],
     content,
@@ -52,8 +81,20 @@ const RichTextEditor = ({ content, onChange, className }: RichTextEditorProps) =
     editorProps: {
       attributes: {
         class: cn(
-          'prose prose-sm sm:prose-base dark:prose-invert focus:outline-none',
-          'min-h-[300px] p-6 border-0 overflow-y-auto'
+          'prose prose-lg max-w-none dark:prose-invert focus:outline-none',
+          'min-h-[300px] p-6 border-0 overflow-y-auto',
+          // Custom prose styling for proper preview
+          'prose-headings:font-bold prose-headings:text-foreground',
+          'prose-h1:text-3xl prose-h1:font-bold prose-h1:mb-4 prose-h1:mt-6',
+          'prose-h2:text-2xl prose-h2:font-bold prose-h2:mb-3 prose-h2:mt-5',
+          'prose-h3:text-xl prose-h3:font-bold prose-h3:mb-2 prose-h3:mt-4',
+          'prose-p:text-base prose-p:leading-7 prose-p:mb-4',
+          'prose-ul:list-disc prose-ul:ml-6 prose-ul:mb-4',
+          'prose-ol:list-decimal prose-ol:ml-6 prose-ol:mb-4',
+          'prose-li:mb-1 prose-li:text-base',
+          'prose-blockquote:border-l-4 prose-blockquote:border-border prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:bg-muted/30 prose-blockquote:py-2',
+          'prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm',
+          'prose-strong:font-bold prose-em:italic'
         ),
       },
     },

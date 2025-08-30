@@ -209,7 +209,7 @@ const AdminDashboard = ({ blogs, onCreateNew, onViewBlogs }: AdminDashboardProps
               <FileText className="h-4 w-4 mr-2" />
               Manage All Posts
             </Button>
-            
+{/*             
             <Button 
               variant="outline"
               className="w-full justify-start"
@@ -226,7 +226,7 @@ const AdminDashboard = ({ blogs, onCreateNew, onViewBlogs }: AdminDashboardProps
             >
               <User className="h-4 w-4 mr-2" />
               Profile Settings (Coming Soon)
-            </Button>
+            </Button> */}
           </CardContent>
         </Card>
       </div>

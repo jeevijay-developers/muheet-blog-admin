@@ -69,10 +69,10 @@ const BlogList = ({ blogs, onEdit, onDelete, onToggleVisibility, onCreateNew }: 
   };
 
   const handleToggleVisibility = (id: string, currentVisibility: boolean, title: string) => {
-    onToggleVisibility(id, !currentVisibility);
+    onToggleVisibility(id, currentVisibility);
     toast({
-      title: currentVisibility ? "Blog Hidden" : "Blog Published",
-      description: `"${title}" is now ${!currentVisibility ? 'visible to the public' : 'hidden from the public'}.`,
+      title: currentVisibility ? "Blog Published" : "Blog Hidden",
+      description: `"${title}" is now ${currentVisibility ? 'visible to the public' : 'hidden from the public'}.`,
     });
   };
 
@@ -269,8 +269,8 @@ const BlogList = ({ blogs, onEdit, onDelete, onToggleVisibility, onCreateNew }: 
                       <div className="flex items-center justify-end gap-2">
                         <Switch
                           checked={blog.visibility === 'public'}
-                          onCheckedChange={() => 
-                            handleToggleVisibility(blog._id, blog.visibility === 'public', blog.title)
+                          onCheckedChange={(checked) => 
+                            handleToggleVisibility(blog._id, checked, blog.title)
                           }
                         />
                         <Button

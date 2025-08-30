@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { AlertCircle, Shield } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { toast } from 'sonner';
 
 interface AdminLoginProps {
   onLogin: () => void;
@@ -29,6 +30,7 @@ const AdminLogin = ({ onLogin }: AdminLoginProps) => {
     if (password === ADMIN_PASSWORD) {
       localStorage.setItem('admin_authenticated', 'true');
       onLogin();
+      toast.success("Login Successful");
     } else {
       setError('Invalid password. Please try again.');
     }

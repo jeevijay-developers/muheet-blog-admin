@@ -13,7 +13,9 @@ import {
   deleteBlog,
   publishBlog,
   unpublishBlog
-} from '@/server/server';
+} from '@/server/server.js';
+import { confirmAlert } from 'react-confirm-alert'; // Import
+import 'react-confirm-alert/src/react-confirm-alert.css'; 
 
 type AdminTab = 'dashboard' | 'blogs' | 'create' | 'edit' | 'settings';
 
@@ -61,10 +63,41 @@ const Admin = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('admin_authenticated');
-    setIsAuthenticated(false);
-    setActiveTab('dashboard');
-    setEditingBlog(null);
+confirmAlert({
+  customUI: ({ onClose }) => {
+    return (
+      <div className='custom-confirm-dialog bg-white p-6 rounded-lg shadow-lg border max-w-md mx-auto'>
+        <h1 className='text-xl font-semibold text-gray-800 mb-3'>Confirm Logout</h1>
+        <p className='text-gray-600 mb-6'>Are you sure you want to logout from the admin panel?</p>
+        <div className='flex gap-3 justify-end'>
+          <button 
+            className='px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors'
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            className='px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors'
+            onClick={() => {
+              localStorage.removeItem('admin_authenticated');
+              setIsAuthenticated(false);
+              setActiveTab('dashboard');
+              setEditingBlog(null);
+              toast({
+                title: "Logged Out",
+                description: "You have been logged out successfully.",
+                variant: "default"
+              });
+              onClose();
+            }}
+          >
+            Yes, Logout
+          </button>
+        </div>
+      </div>
+    );
+  }
+});
   };
 
   const handleCreateBlog = async (data: BlogFormData) => {
@@ -150,8 +183,8 @@ const Admin = () => {
   const handleToggleBlogVisibility = async (id: string, isPublic: boolean) => {
     try {
       const response = isPublic 
-        ? await unpublishBlog(id)
-        : await publishBlog(id);
+        ? await publishBlog(id)
+        : await unpublishBlog(id);
         
       if (response.success) {
         // Refresh blogs list
@@ -161,8 +194,8 @@ const Admin = () => {
         }
         
         toast({
-          title: isPublic ? "Blog Unpublished" : "Blog Published",
-          description: `Your blog post is now ${isPublic ? "unpublished" : "published"}.`,
+          title: isPublic ? "Blog Published" : "Blog Unpublished",
+          description: `Your blog post is now ${isPublic ? "published" : "unpublished"}.`,
         });
       }
     } catch (error) {
