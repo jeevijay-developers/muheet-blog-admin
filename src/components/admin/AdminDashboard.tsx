@@ -59,14 +59,6 @@ const AdminDashboard = ({ blogs, onCreateNew, onViewBlogs }: AdminDashboardProps
       changeType: 'negative' as const,
       icon: EyeOff,
       color: 'text-muted-foreground'
-    },
-    {
-      title: 'Total Views',
-      value: '1.2K',
-      change: '+15%',
-      changeType: 'positive' as const,
-      icon: BarChart3,
-      color: 'text-accent'
     }
   ];
 
